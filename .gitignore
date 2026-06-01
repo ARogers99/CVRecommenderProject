@@ -1,0 +1,26 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+backend/app/.venv
+.venv/
+
+# Environment variables - important, never commit these
+.env
+*.env
+
+# React
+node_modules/
+dist/
+
+# uv
+.python-version
+
+# AWS / misc
+.DS_Store
+*.pem          # SSH keys, absolutely never commit these
