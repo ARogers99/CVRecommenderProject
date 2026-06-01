@@ -21,6 +21,11 @@ dist/
 # uv
 .python-version
 
+# IDEs
+.idea/
+.vscode/
+*.iml
+
 # AWS / misc
 .DS_Store
 *.pem          # SSH keys, absolutely never commit these
