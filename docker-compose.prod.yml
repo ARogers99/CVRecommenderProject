@@ -1,0 +1,14 @@
+services:
+  backend:
+    image: arog123/cvrecommender-backend:latest
+    env_file:
+      - ./backend/.env
+    restart: always
+
+  nginx:
+    image: arog123/cvrecommender-nginx:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
