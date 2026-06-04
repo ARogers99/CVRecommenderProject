@@ -1,29 +1,18 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
-from pydantic import BaseModel
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.api.routes import cv
 
 app = FastAPI()
 
-class Item(BaseModel):
-    text: str
-    is_done: bool = False
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-items = []
+app.include_router(cv.router)
+
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
-
-@app.post("/cv/upload")
-async def upload_cv(file: UploadFile = File(...)):
-    contents = await file.read()
-    # parse PDF text here with pdfplumber or PyMuPDF
-    # return extracted text or store it
-@app.post("/items")
-async def create_item(item: Item):
-    items.append(item)
-    return items
-@app.get("/items/{item_id}", response_model=Item)
-async def get_item(item_id: int) -> Item:
-    if item_id < len(items):
-        return items[item_id]
-    else:
-        raise HTTPException(status_code=404, detail="Item not found")
+    return {"message": "CV Recommender API"}
