@@ -21,7 +21,7 @@
 <h3 align="center">CVRecommenderProject</h3>
 
   <p align="center">
-    A cv recommender project made using React and FastAPI, with calls to Anthropics Claude LLM and Adzuna API. Users upload CV, The Cv is parsed and best matches are scored 0-1 against available jobs in Adzuna.
+    A CV recommender project made using React and FastAPI, with calls to Anthropics Claude LLM and Adzuna API. Users upload CV, The CV is parsed and best matches are scored 0-1 against available jobs in Adzuna.
     The highest scoring matches, those greater than 0.7 score, are then passed to Claude which suggests changes to user CV to increase match scores.
     <br />
     <a href="https://github.com/ARogers99/CVRecommenderProject"><strong>Explore the docs »</strong></a>
@@ -52,7 +52,6 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#contact">Contact</a></li>
