@@ -20,7 +20,18 @@ jobs:
         run: |
           docker build -t arog123/cvrecommender-backend ./backend
           docker push arog123/cvrecommender-backend
+          
 
+      - name: Copy compose file to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.prod.yml"
+          target: "~"
+
+          
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
