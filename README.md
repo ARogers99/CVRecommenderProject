@@ -132,8 +132,8 @@ Before setting up the project, make sure you have the following software install
 ## Roadmap
 
 - [ ] Finish Backend
-    - [ ] Adzuna API
-    - [ ] CV matching/scoring
+    - [x] Adzuna API
+    - [x] CV matching/scoring
     - [ ] LLM Messaging and response
 - [ ] Frontend
 
