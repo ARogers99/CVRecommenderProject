@@ -11,7 +11,7 @@ backend/app/.venv
 .venv/
 
 # Environment variables - important, never commit these
-.env
+backend/.env
 *.env
 
 # React
