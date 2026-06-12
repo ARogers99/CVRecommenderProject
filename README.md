@@ -21,8 +21,8 @@
 <h3 align="center">CVRecommenderProject</h3>
 
   <p align="center">
-    A CV recommender project made using React and FastAPI, with calls to Anthropics Claude LLM and Adzuna API. Users upload CV, The CV is parsed and best matches are scored 0-1 against available jobs in Adzuna.
-    The highest scoring matches, those greater than 0.7 score, are then passed to Claude which suggests changes to user CV to increase match scores.
+    A CV recommender project made using React and FastAPI, with calls to Anthropics Claude LLM and JSearch API. Users upload CV, The CV is parsed and best matches are scored 0-1 against available jobs.
+    The highest scoring matches, those greater than 0.2 score, are then passed to Claude which suggests changes to user CV to increase match scores.
     <br />
     <a href="https://github.com/ARogers99/CVRecommenderProject"><strong>Explore the docs »</strong></a>
     <br />
@@ -103,9 +103,8 @@ Before setting up the project, make sure you have the following software install
    # Anthropic Claude LLM Configuration
    ANTHROPIC_API_KEY=your_claude_api_key_here
 
-   # Adzuna API Access Credentials
-   ADZUNA_APP_ID=your_adzuna_app_id_here
-   ADZUNA_APP_KEY=your_adzuna_app_key_here
+   #JSEARCH Configuration
+   JSEARCH_API_KEY= your_api_key
    ```
 3. Initialize and boot up the Backend Microservice (FastAPI):
    ```sh
@@ -132,7 +131,7 @@ Before setting up the project, make sure you have the following software install
 ## Roadmap
 
 - [ ] Finish Backend
-    - [x] Adzuna API
+    - [x] JSearch API
     - [x] CV matching/scoring
     - [ ] LLM Messaging and response
 - [ ] Frontend

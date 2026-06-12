@@ -9,4 +9,4 @@ class JobMatch(BaseModel):
 
 class MatchResponse(BaseModel):
     matches: list[JobMatch]
-    total: int
+    total: int = 0

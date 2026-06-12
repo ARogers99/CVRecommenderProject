@@ -42,10 +42,10 @@ def test_match_score_no_skills():
 
 def test_match_cv_filters_low_scores():
     jobs = [
-        Job(id="1", title="Python Dev", company="Corp", location="Dublin",
-            description="python fastapi docker", url="http://test.com"),
-        Job(id="2", title="Java Dev", company="Corp", location="Dublin",
-            description="java spring hibernate", url="http://test.com")
+        Job(job_id="1", title="Python Dev", company="Corp", location="Dublin",
+            description="python fastapi docker", link="http://test.com"),
+        Job(job_id="2", title="Java Dev", company="Corp", location="Dublin",
+            description="java spring hibernate", link="http://test.com")
     ]
     cv_text = "experienced python and fastapi developer"
     result = match_cv_job(cv_text, jobs)
@@ -56,10 +56,10 @@ def test_match_cv_filters_low_scores():
 
 def test_match_cv_sorted_by_score():
     jobs = [
-        Job(id="1", title="Python Dev", company="Corp", location="Dublin",
-            description="python fastapi docker aws", url="http://test.com"),
-        Job(id="2", title="Senior Python Dev", company="Corp", location="Dublin",
-            description="python", url="http://test.com")
+        Job(job_id="1", title="Python Dev", company="Corp", location="Dublin",
+            description="python fastapi docker aws", link="http://test.com"),
+        Job(job_id="2", title="Senior Python Dev", company="Corp", location="Dublin",
+            description="python", link="http://test.com")
     ]
     cv_text = "python fastapi docker aws developer"
     result = match_cv_job(cv_text, jobs)

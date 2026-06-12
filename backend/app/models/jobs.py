@@ -1,13 +1,13 @@
 from pydantic import BaseModel
+from typing import Optional
+
 
 class Job(BaseModel):
-    id: str
+    job_id: Optional[str] = None
     title: str
-    company: str
-    location: str
-    description: str
-    url: str
-    salary_min: float | None = None
-    salary_max: float | None = None
-    date_posted: str | None = None
-    required_skills: list[str] = []
+    company: Optional[str] = None
+    location: Optional[str] = None
+    description: Optional[str] = None
+    link: Optional[str] = None
+    salary: Optional[str] = None
+    source: Optional[str] = None
