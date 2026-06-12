@@ -134,7 +134,7 @@ Before setting up the project, make sure you have the following software install
     - [x] JSearch API
     - [x] CV matching/scoring
     - [ ] LLM Messaging and response
-- [ ] Frontend
+- [x] Frontend
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
