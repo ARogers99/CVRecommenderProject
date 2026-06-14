@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   ArrowUpRight,
   BriefcaseBusiness,
@@ -14,7 +14,17 @@ import {
 
 import "./App.css"
 import { Button } from "@/components/ui/button"
-import { getMatches, uploadCv } from "@/lib/api"
+import { getCountries, getMatches, uploadCv, getSuggestions } from "@/lib/api"
+
+const fallbackCountries = [
+  { code: "gb", name: "United Kingdom" },
+  { code: "us", name: "United States" },
+  { code: "ca", name: "Canada" },
+  { code: "au", name: "Australia" },
+  { code: "de", name: "Germany" },
+  { code: "fr", name: "France" },
+  { code: "nl", name: "Netherlands" },
+]
 
 const initialSearch = {
   keywords: "",
@@ -38,7 +48,9 @@ function App() {
   const [total, setTotal] = useState(0)
   const [status, setStatus] = useState("idle")
   const [error, setError] = useState("")
-
+  const [countries, setCountries] = useState(fallbackCountries)
+  const [suggestionsByJob, setSuggestionsByJob] = useState({})
+  const [suggestionLoadingJobId, setSuggestionLoadingJobId] = useState(null)
   const canSearch = Boolean(cvData?.raw_text && search.keywords.trim())
   const topScore = useMemo(() => {
     if (!matches.length) {
@@ -48,27 +60,65 @@ function App() {
     return scoreLabel(matches[0].score)
   }, [matches])
 
-  async function handleUpload(event) {
-    event.preventDefault()
-    if (!file) {
-      setError("Choose a PDF CV first.")
-      return
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadCountries() {
+      try {
+        const countryList = await getCountries()
+
+        if (isMounted && countryList?.length) {
+          setCountries(countryList)
+        }
+      } catch {
+        if (isMounted) {
+          setCountries(fallbackCountries)
+        }
+      }
     }
 
-    setStatus("uploading")
-    setError("")
-    setMatches([])
-    setTotal(0)
+    loadCountries()
 
-    try {
-      const parsedCv = await uploadCv(file)
-      setCvData(parsedCv)
-      setStatus("ready")
-    } catch (uploadError) {
-      setStatus("idle")
-      setError(uploadError.message)
+    return () => {
+      isMounted = false
     }
+  }, [])
+
+  async function handleFileSelected(selectedFile) {
+  if (!selectedFile) {
+    return
   }
+
+  if (selectedFile.type !== "application/pdf") {
+    setError("Please upload a PDF file.")
+    setFile(null)
+    setCvData(null)
+    return
+  }
+
+  setFile(selectedFile)
+  setCvData(null)
+  setMatches([])
+  setTotal(0)
+  setStatus("uploading")
+  setError("")
+
+  try {
+    const parsedCv = await uploadCv(selectedFile)
+
+    if (!parsedCv?.raw_text) {
+      throw new Error("CV uploaded, but no text could be extracted.")
+    }
+
+    setCvData(parsedCv)
+    setStatus("ready")
+  } catch (uploadError) {
+    setFile(null)
+    setCvData(null)
+    setStatus("idle")
+    setError(uploadError.message || "Failed to upload CV.")
+  }
+}
 
   async function handleSearch(event) {
     event.preventDefault()
@@ -95,7 +145,26 @@ function App() {
       setError(matchError.message)
     }
   }
+async function handleGetSuggestions(job) {
+  setError("")
+  setSuggestionLoadingJobId(job.job_id)
 
+  try {
+    const result = await getSuggestions({
+      cvText: cvData.raw_text,
+      job,
+    })
+
+    setSuggestionsByJob((current) => ({
+      ...current,
+      [job.job_id]: result,
+    }))
+  } catch (suggestionError) {
+    setError(suggestionError.message || "Failed to get CV suggestions.")
+  } finally {
+    setSuggestionLoadingJobId(null)
+  }
+}
   function updateSearch(field, value) {
     setSearch(current => ({
       ...current,
@@ -106,9 +175,9 @@ function App() {
     return (
     <main className="app-shell">
       <section className="workspace-header">
-        <div>
+        <div className="header-copy">
           <p className="eyebrow">CV Recommender</p>
-          <h1>Find roles that fit your CV</h1>
+          <h1>Job Matches and CV Tips</h1>
         </div>
 
         <div className="summary-strip" aria-label="Match summary">
@@ -125,7 +194,7 @@ function App() {
 
       <section className="workflow-grid">
         <aside className="control-panel" aria-label="Search controls">
-          <form className="panel-section" onSubmit={handleUpload}>
+          <div className="panel-section" >
             <div className="section-title">
               <FileText aria-hidden="true" />
               <h2>CV</h2>
@@ -135,31 +204,19 @@ function App() {
               <input
                 accept="application/pdf"
                 type="file"
+                disabled={status==="uploading"}
                 onChange={(event) => {
                   const selected = event.target.files?.[0] || null
-                  setFile(selected)
-                  setCvData(null)
-                  setMatches([])
-                  setTotal(0)
-                  setStatus("idle")
-                  setError("")
+                  handleFileSelected(selected)
+                  event.target.value=""
                 }}
               />
-              <Upload aria-hidden="true" />
-              <strong>{file?.name || "Select PDF"}</strong>
+              {status === "uploading" ? (<Loader2 className="spin" aria-hidden="true" />) : (<Upload aria-hidden="true" />)}
+              <strong>{status === "uploading" ? "uploading cv" :file?.name || "Select and Upload PDF"}</strong>
               <span>
                 {file ? `${Math.max(1, Math.round(file.size / 1024))} KB` : "PDF only"}
               </span>
             </label>
-
-            <Button className="wide-button" disabled={status === "uploading"} type="submit">
-              {status === "uploading" ? (
-                <Loader2 className="spin" aria-hidden="true" />
-              ) : (
-                <Upload aria-hidden="true" />
-              )}
-              {status === "uploading" ? "Uploading" : "Upload CV"}
-            </Button>
 
             {cvData?.raw_text ? (
               <div className="cv-ready" role="status">
@@ -167,7 +224,7 @@ function App() {
                 <span>{cvData.raw_text.length.toLocaleString()} characters parsed</span>
               </div>
             ) : null}
-          </form>
+          </div>
 
           <form className="panel-section" onSubmit={handleSearch}>
             <div className="section-title">
@@ -176,25 +233,30 @@ function App() {
             </div>
 
             <label className="field">
-              <span>Role</span>
+              <span>Role and Query</span>
               <input
                 value={search.keywords}
                 onChange={(event) => updateSearch("keywords", event.target.value)}
-                placeholder="Data analyst"
+                placeholder="Data analyst in London"
               />
             </label>
 
             <label className="field">
               <span>Location</span>
-              <input
+              <select
                 value={search.location}
                 onChange={(event) => updateSearch("location", event.target.value)}
-                placeholder="ie"
-              />
+              >
+                {countries.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.name}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className="field">
-              <span>Number of Pages</span>
+              <span>Max Pages of Results Returned</span>
               <input
                 type="number"
                 min="1"
@@ -230,7 +292,7 @@ function App() {
           <div className="results-heading">
             <div>
               <p className="eyebrow">Matched Jobs</p>
-              <h2>{matches.length ? `${matches.length} roles ranked` : "Ready when you are"}</h2>
+              <h2>{matches.length ? `${matches.length} roles ranked`:""}</h2>
             </div>
 
             {status === "matching" ? (
@@ -303,6 +365,42 @@ function App() {
                       <ArrowUpRight aria-hidden="true" />
                     </a>
                   </Button>
+                  <Button
+                    className="job-link"
+                    variant="outline"
+                    onClick={() => handleGetSuggestions(job)}
+                    disabled={suggestionLoadingJobId === job.job_id || Boolean(suggestionsByJob[job.job_id])}
+                  >
+                    {suggestionLoadingJobId === job.job_id
+                      ? "Generating..."
+                      : suggestionsByJob[job.job_id]
+                        ? "Suggestions generated"
+                        : "Get CV Suggestions"}
+                  </Button>
+                  {suggestionsByJob[job.job_id] ? (
+                    <div className="suggestions-box">
+                      <h4>CV Suggestions</h4>
+
+                      <p>{suggestionsByJob[job.job_id].overall_match}</p>
+
+                      <ul>
+                        {suggestionsByJob[job.job_id].suggestions.map((suggestion, index) => (
+                          <li key={index}>
+                            <strong>{suggestion.section}</strong>
+                            <p>
+                              <strong>Current:</strong> {suggestion.current}
+                            </p>
+                            <p>
+                              <strong>Suggested:</strong> {suggestion.suggested}
+                            </p>
+                            <p>
+                              <strong>Reason:</strong> {suggestion.reason}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                 </article>
               ))}
             </div>

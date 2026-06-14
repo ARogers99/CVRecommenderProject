@@ -39,6 +39,17 @@ export async function getMatches({ keywords, location, cvText, num_pages }) {
   return response.json()
 }
 
+export async function getCountries() {
+  const response = await fetch(`${API_BASE_URL}/jobs/countries`)
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null)
+    throw new Error(error?.detail || "Failed to get countries")
+  }
+
+  return response.json()
+}
+
 export async function getSuggestions({ cvText, job }) {
   const response = await fetch(`${API_BASE_URL}/suggestions/`, {
     method: "POST",
@@ -52,7 +63,12 @@ export async function getSuggestions({ cvText, job }) {
   })
 
   if (!response.ok) {
-    throw new Error("Failed to get CV suggestions")
+    if (response.status === 429) {
+      throw new Error("Suggestion limit reached. Please try again later.")
+    }
+
+    const error = await response.json().catch(() => null)
+    throw new Error(error?.detail || "Failed to get CV suggestions.")
   }
 
   return response.json()

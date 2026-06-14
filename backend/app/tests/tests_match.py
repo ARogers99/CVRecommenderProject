@@ -51,7 +51,7 @@ def test_match_cv_filters_low_scores():
     result = match_cv_job(cv_text, jobs)
 
     # java job should be filtered out
-    assert all(m.score > 0.1 for m in result.matches)
+    assert all(m.score > 0.2 for m in result.matches)
 
 
 def test_match_cv_sorted_by_score():
