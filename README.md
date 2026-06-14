@@ -21,8 +21,8 @@
 <h3 align="center">CVRecommenderProject</h3>
 
   <p align="center">
-    A CV recommender project made using React and FastAPI, with calls to Anthropics Claude LLM and JSearch API. Users upload CV, The CV is parsed and best matches are scored 0-1 against available jobs.
-    The highest scoring matches, those greater than 0.2 score, are then passed to Claude which suggests changes to user CV to increase match scores.
+    A CV recommender project made using React and FastAPI, with calls to Anthropic Claude and the JSearch API. Users upload a CV, the CV is parsed, and available jobs are scored against the extracted CV text.
+    Matched roles can then be passed to Claude for CV improvement suggestions that help the user better target a selected role.
     <br />
     <a href="https://github.com/ARogers99/CVRecommenderProject"><strong>Explore the docs »</strong></a>
     <br />
@@ -43,6 +43,7 @@
       <a href="#about-the-project">About The Project</a>
       <ul>
         <li><a href="#built-with">Built With</a></li>
+        <li><a href="#frontend-architecture">Frontend Architecture</a></li>
       </ul>
     </li>
     <li>
@@ -64,7 +65,15 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
+CVRecommenderProject helps users compare their CV against live job listings. The application currently supports:
 
+* PDF CV upload and text extraction
+* Job search by role/query and supported country
+* Match scoring between CV skills and job descriptions
+* Matched job cards with matching skills and skill gaps
+* Claude-powered CV suggestions for selected roles
+
+The frontend has been redesigned around a feature-based architecture. The job matching workflow is grouped under `frontend/src/features/job-matching`, with API orchestration handled in a feature hook and UI split into focused components.
 
 ### Built With
 
@@ -74,6 +83,42 @@
 * [![Docker][Docker]][Docker-url]
 * [![AWS][AWS]][AWS-url]
 * [![Claude][Claude]][Claude-url]
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+### Frontend Architecture
+
+The React frontend follows a feature-first structure inspired by professional frontend architecture principles:
+
+```txt
+frontend/src/
+├── App.jsx
+├── App.css
+├── components/ui/
+├── features/
+│   └── job-matching/
+│       ├── JobMatchingPage.jsx
+│       ├── constants.js
+│       ├── formatters.js
+│       ├── hooks/
+│       │   └── useJobMatchingWorkflow.js
+│       └── components/
+│           ├── CvUploader.jsx
+│           ├── SearchForm.jsx
+│           ├── SummaryMetrics.jsx
+│           ├── JobResults.jsx
+│           ├── JobCard.jsx
+│           └── SuggestionsPanel.jsx
+└── lib/
+    └── api.js
+```
+
+Key decisions:
+
+* `App.jsx` stays thin and delegates the main experience to `JobMatchingPage`.
+* `useJobMatchingWorkflow` owns upload, search, suggestions, loading, and error state.
+* Presentational components receive focused props and avoid direct API knowledge.
+* Feature constants and formatting helpers stay inside the job matching feature until they are needed elsewhere.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -126,23 +171,53 @@ Before setting up the project, make sure you have the following software install
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- PROJET FLOW -->
+<!-- PROJECT FLOW -->
 ## Project Flow
-1. User authenticates with Clerk and uploads CV
-2. FastAPI uploads the PDF to S3
-3. FastAPI extracts text from the PDF
-4. FastAPI stores metadata + extracted text in PostgreSQL
-5. Matching uses the extracted text from PostgreSQL
-6. S3 is only used if the original file needed again
+
+Current flow:
+
+1. User uploads a PDF CV in the React frontend.
+2. FastAPI extracts text from the PDF.
+3. User searches for jobs by query and supported country.
+4. FastAPI fetches jobs from JSearch.
+5. Matching scores jobs against the extracted CV text.
+6. The frontend displays ranked job cards with matched and missing skills.
+7. User can request Claude-powered CV suggestions for a selected role.
+
+Planned production flow:
+
+1. User authenticates with Clerk.
+2. User uploads a CV through the frontend.
+3. FastAPI uploads the original PDF to S3.
+4. FastAPI extracts text from the PDF.
+5. FastAPI stores user, CV metadata, extracted text, match history, and suggestion history in PostgreSQL.
+6. Matching uses stored CV text from PostgreSQL.
+7. S3 is used when the original CV file needs to be retrieved or reprocessed.
 
 <!-- ROADMAP -->
 ## Roadmap
 
-- [ ] Finish Backend
-    - [x] JSearch API
-    - [x] CV matching/scoring
-    - [ ] LLM Messaging and response
-- [x] Frontend
+- [ ] Backend
+  - [x] JSearch API integration
+  - [x] CV parsing
+  - [x] CV matching/scoring
+  - [x] Claude CV suggestions
+  - [ ] PostgreSQL persistence for users, CV metadata, extracted text, matches, and suggestions
+  - [ ] S3 storage for uploaded CV files
+  - [ ] Clerk authentication and user-scoped data access
+- [ ] Frontend
+  - [x] Feature-based job matching architecture
+  - [x] CV upload flow
+  - [x] Country dropdown from backend `VALID_COUNTRIES`
+  - [x] Matched job cards
+  - [x] CV suggestion controls
+  - [ ] Auth-aware dashboard views after Clerk integration
+  - [ ] Saved CVs, saved matches, and suggestion history
+- [ ] Deployment
+  - [x] Docker/nginx structure
+  - [ ] Production environment configuration
+  - [ ] Database migrations
+  - [ ] S3 bucket policy and upload limits
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
