@@ -126,6 +126,14 @@ Before setting up the project, make sure you have the following software install
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- PROJET FLOW -->
+## Project Flow
+1. User authenticates with Clerk and uploads CV
+2. FastAPI uploads the PDF to S3
+3. FastAPI extracts text from the PDF
+4. FastAPI stores metadata + extracted text in PostgreSQL
+5. Matching uses the extracted text from PostgreSQL
+6. S3 is only used if the original file needed again
 
 <!-- ROADMAP -->
 ## Roadmap
